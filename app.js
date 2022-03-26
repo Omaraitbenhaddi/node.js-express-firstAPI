@@ -2,7 +2,30 @@ const path=require("path")
 const express = require("express");
 const res = require("express/lib/response");
 const app = express();
-app.use(express.json())
+
+const Ajv=require("ajv");
+const schema = {
+    type: "object",
+    properties: {
+        name:{type: "string",pattern: "^[A-Z][a-z]*$"},
+        dept:{type: "string",maxLength: 2,minLength: 2,},
+    },
+    required:["name","dept"],
+
+
+}
+
+
+
+
+
+
+const ajv= new Ajv();
+let validator=ajv.compile(schema);
+
+
+
+app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 const Student=[
     {name:"omar",dept:"IT",id:"0"},
@@ -14,9 +37,16 @@ const Student=[
 ];
 
 
+
+
 const port=process.env.PORT||3000;
 
-app.get("/main",(req,res)=>{
+app.get("/main",(req,res,next)=>{
+    //
+    //
+    console.log("stage #1")
+    next();
+},(req,res)=>{
     res.sendFile(path.join(__dirname,"./main.html"))
 });
 
@@ -30,10 +60,14 @@ app.get("/welcome.html",(req,res)=>{
 
 // req body
 app.post("/welcome.html",(req,res)=>{
+    
     console.log(req.body)
     res.send(`OK thanks a 5ay ${req.body.fnm} ${req.body.lnm}`)
+
 })
 
+
+//route handler middleware
 app.get("/", (req,res) => {
     console.log("request received...");
     res.send("jazab awld ba9");
@@ -42,6 +76,7 @@ app.get("/", (req,res) => {
 
 //request all student
 app.get("/student",(req,res)=>{
+
     res.set("Access-Control-Allow-Origin","*")
     res.json(Student);
 })
@@ -59,9 +94,17 @@ app.get("/student/:id",(req,res)=>{
 
 //new student
 app.post("/student",(req,res)=>{
-    req.body.id=Student.length+1;
-    Student.push(req.body);
-    res.json(req.body)
+    let valid=validator(req.body);
+
+    if(valid)
+    {
+        req.body.id=Student.length+1;
+        Student.push(req.body);
+        res.json(req.body)
+    }
+    else{
+        res.status(403).send("non commande")
+    }
 })
 
 //delete student 
