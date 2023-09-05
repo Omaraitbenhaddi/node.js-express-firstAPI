@@ -1,0 +1,15 @@
+name: Mon workflow cible
+
+on:
+  workflow_run:
+    workflows: ["Déclencher un workflow externe"]
+    types:
+      - completed
+
+jobs:
+  my_job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Exécutez les étapes de votre workflow cible ici
+        # Ajoutez les étapes que vous souhaitez exécuter dans ce workflow cible
